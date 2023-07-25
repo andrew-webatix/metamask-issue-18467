@@ -1,0 +1,28 @@
+diff --git a/app/scripts/controllers/network/create-network-client.ts b/app/scripts/controllers/network/create-network-client.ts
+index 6e96b71f5..9023e57d0 100644
+--- a/app/scripts/controllers/network/create-network-client.ts
++++ b/app/scripts/controllers/network/create-network-client.ts
+@@ -90,6 +90,7 @@ export function createNetworkClient(
+       : createCustomNetworkMiddleware({
+           blockTracker,
+           chainId: networkConfig.chainId,
++          rpcProvider,
+           rpcApiMiddleware,
+         });
+ 
+@@ -156,6 +157,7 @@ const createChainIdMiddleware = (
+ function createCustomNetworkMiddleware({
+   blockTracker,
+   chainId,
++  rpcProvider,
+   rpcApiMiddleware,
+ }: {
+   blockTracker: PollingBlockTracker;
+@@ -172,6 +174,7 @@ function createCustomNetworkMiddleware({
+     createBlockRefRewriteMiddleware({ blockTracker }),
+     createBlockCacheMiddleware({ blockTracker }),
+     createInflightCacheMiddleware(),
++    createRetryOnEmptyMiddleware({ blockTracker, provider: rpcProvider }),
+     createBlockTrackerInspectorMiddleware({ blockTracker }),
+     rpcApiMiddleware,
+   ]);

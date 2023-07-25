@@ -1,0 +1,61 @@
+<html>
+<body>
+  <script>
+    const tokenAddress = '0xc2132D05D31c914a87C6611C10748AEb04B58e8F' // (PoS) Tether USD (USDT)
+    const ownerAddress = '0x623820c363470EF74e4Ccd4475d7F3C14e6178e3' // Arbitrary address
+    const sleep = (delay) => new Promise((resolve) => setTimeout(resolve, delay))
+    const iterationsCount = 3000
+    let errorsCount = 0
+    const test = async () => {
+      // Setup correct chain
+      try {
+        await ethereum.request({
+          method: 'wallet_switchEthereumChain',
+          params: [{ chainId: '0x89' }]
+        })
+      } catch ({ code }) {
+        if (code === 4902) {
+          // Chain have to be added first
+          await ethereum.request({
+            method: 'wallet_addEthereumChain',
+            params: [{
+              chainId: '0x89', // 137
+              chainName: 'Polygon Mainnet',
+              rpcUrls: ['https://polygon-rpc.com'],
+              nativeCurrency: {
+                name: 'MATIC',
+                symbol: 'MATIC',
+                decimals: 18
+              }
+            }]
+          })
+        }
+      }
+      for (let i = 1; i <= iterationsCount; i++) {
+        console.log(`Iteration ${i} (errors: ${errorsCount})`)
+        try {
+          const balance = await ethereum.request({
+            method: 'eth_call',
+            params: [
+              {
+                to: tokenAddress,
+                data: '0x70a08231000000000000000000000000' + ownerAddress.substring(2) // balanceOf(ownerAddress)
+              },
+              'latest'
+            ],
+            id: 1,
+            jsonrpc: '2.0'
+          })
+          console.log('Balance:', BigInt(balance).toString())
+        } catch (err) {
+          console.error('Error:', err.message)
+          errorsCount++
+        }
+        await sleep(1000)
+      }
+      console.log(`Errors rate: ${errorsCount} / ${iterationsCount}`)
+    }
+    test()
+  </script>
+</body>
+</html>
